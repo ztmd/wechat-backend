@@ -1,0 +1,46 @@
+{
+  "name": "wechat-backend",
+  "version": "0.0.1",
+  "description": "Backend for WeChat.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ztmd/wechat-backend.git"
+  },
+  "keywords": [],
+  "author": "xovel<xovel@vip.qq.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ztmd/wechat-backend/issues"
+  },
+  "homepage": "https://github.com/ztmd/wechat-backend#readme",
+  "devDependencies": {
+    "lerna": "^3.13.3"
+  },
+  "dependencies": {
+    "@z9i/date-format": "0.0.1",
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
+    "body-parser-xml": "^1.1.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "express-jwt": "^5.3.1",
+    "express-validation": "^1.0.2",
+    "helmet": "^3.16.0",
+    "joi": "^14.3.1",
+    "js-yaml": "^3.13.1",
+    "jsonwebtoken": "^8.5.1",
+    "method-override": "^3.0.0",
+    "morgan": "^1.9.1",
+    "multer": "^1.4.1",
+    "request": "^2.88.0",
+    "rotating-file-stream": "^1.4.0",
+    "serve-favicon": "^2.5.0",
+    "tracer": "^0.9.8",
+    "xml2js": "^0.4.19"
+  }
+}

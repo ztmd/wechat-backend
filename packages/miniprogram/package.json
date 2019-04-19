@@ -1,0 +1,11 @@
+{
+  "name": "wechat-backend-miniprogram",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "xovel<xovel@vip.qq.com>",
+  "license": "MIT"
+}
