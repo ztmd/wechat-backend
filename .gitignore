@@ -30,3 +30,5 @@ package-lock.json
 
 /cache
 /logs
+
+test.js
