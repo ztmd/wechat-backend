@@ -7,5 +7,8 @@
   },
   "keywords": [],
   "author": "xovel<xovel@vip.qq.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "peerDependencies": {
+    "axios": "^0.18.0"
+  }
 }
