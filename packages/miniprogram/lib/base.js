@@ -5,13 +5,8 @@ const path = require('path')
 
 const axios = require('axios')
 
-// 从缓存文件中加载 token，模拟中继服务器
-// 可以修改为采用 redis 或者 mongodb 等方式
-const CACHE_FILE = path.join(__dirname, 'cache.json')
-let tokenObj = {}
-if (fs.existsSync(CACHE_FILE)) {
-  tokenObj = require(CACHE_FILE)
-}
+const CACHE_FILE = path.join(__dirname, 'cache_miniprogram.json')
+const SESSION_KEY_FILE = path.join(__dirname, 'session_key_miniprogram.json')
 
 /**
  * 基础类
@@ -48,6 +43,24 @@ class Base {
     })
 
     this.printLog = printLog
+
+    this.tokenObj = {}
+    this.sessionKeyObj = {}
+
+    this._init()
+  }
+
+  _init() {
+
+    // 从缓存文件中加载 token 和 session 信息，模拟中继服务器
+    // 可以修改为采用 redis 或者 mongodb 等方式
+    if (fs.existsSync(CACHE_FILE)) {
+      this.tokenObj = require(CACHE_FILE)
+    }
+
+    if (fs.existsSync(SESSION_KEY_FILE)) {
+      this.sessionKeyObj = require(SESSION_KEY_FILE)
+    }
   }
 
   log(...args) {
@@ -84,7 +97,7 @@ class Base {
           this.log('then', response)
         }).catch(error2 => {
           reject(error2)
-          this.log('catch2', error2)
+          this.log('catch', error2)
         })
       }).catch(error => {
         reject(error)
@@ -122,10 +135,10 @@ class Base {
   getAccessToken() {
     // 如果缓存中有有效 token，则直接获取并返回
     if (
-      tokenObj.access_token
-      && Date.now() - tokenObj._time <= (tokenObj.expire_in || 7200) * 1000 - 5000
+      this.tokenObj.access_token
+      && Date.now() - this.tokenObj._time <= (this.tokenObj.expire_in || 7200) * 1000 - 5000
     ) {
-      return Promise.resolve(tokenObj)
+      return Promise.resolve(this.tokenObj)
     }
 
     return new Promise((resolve, reject) => {
@@ -138,10 +151,10 @@ class Base {
         }
       }).then(data => {
         // 获取 access_token 之后更新缓存
-        data._time = Date.now();
-        tokenObj = data;
-        fs.writeFileSync(CACHE_FILE, JSON.stringify(data))
-        resolve(data);
+        data._time = Date.now()
+        tokenObj = data
+        fs.writeFile(CACHE_FILE, JSON.stringify(data), () => {})
+        resolve(data)
       }).catch(error => {
         reject(error)
       })
@@ -153,16 +166,25 @@ class Base {
    * @param {String} code 登录时获取的 code
    */
   code2Session(code) {
-    return this._request({
-      url: `/sns/jscode2session`,
-      params: {
-        appid: this.appId,
-        secret: this.appSecret,
-        js_code: code,
-        grant_type: 'authorization_code'
-      }
+    return new Promise((resolve, reject) => {
+      this._request({
+        url: `/sns/jscode2session`,
+        params: {
+          appid: this.appId,
+          secret: this.appSecret,
+          js_code: code,
+          grant_type: 'authorization_code'
+        }
+      }).then(data => {
+        // 存入缓存
+        this.sessionKeyObj[data.openid] = data.session_key
+        fs.writeFile(SESSION_KEY_FILE, JSON.stringify(this.sessionKeyObj), () => {})
+        resolve(data)
+      }).catch(error => {
+        reject(error)
+      })
     })
   }
 }
 
-module.exports = Base;
+module.exports = Base
