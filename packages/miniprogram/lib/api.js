@@ -14,6 +14,7 @@ class API extends Base {
   // ----------------
   /**
    * 用户支付完成后，获取该用户的 UnionId
+   *
    * @param {string} openid 用户的 openId
    * @param {object} data 附加数据
    * @param {string} data.transaction_id 微信支付订单号
@@ -39,6 +40,7 @@ class API extends Base {
   // ----------------
   /**
    * 获取用户访问小程序日留存
+   *
    * @param {string} begin_date 开始日期。格式为 yyyymmdd
    * @param {string} end_date 结束日期，限定查询1天数据，允许设置的最大值为昨日。格式为 yyyymmdd
    */
@@ -53,6 +55,7 @@ class API extends Base {
 
   /**
    * 获取用户访问小程序月留存
+   *
    * @param {string} begin_date 开始日期，为自然月第一天。格式为 yyyymmdd
    * @param {string} end_date 结束日期，为自然月最后一天，限定查询一个月数据。格式为 yyyymmdd
    */
@@ -67,6 +70,7 @@ class API extends Base {
 
   /**
    * 获取用户访问小程序周留存
+   *
    * @param {string} begin_date 开始日期，为周一日期。格式为 yyyymmdd
    * @param {string} end_date 结束日期，为周日日期，限定查询一周数据。格式为 yyyymmdd
    */
@@ -81,6 +85,7 @@ class API extends Base {
 
   /**
    * 获取用户访问小程序数据日趋势
+   *
    * @param {string} begin_date 开始日期。格式为 yyyymmdd
    * @param {string} end_date 结束日期，限定查询1天数据，允许设置的最大值为昨日。格式为 yyyymmdd
    */
@@ -95,6 +100,7 @@ class API extends Base {
 
   /**
    * 获取用户访问小程序数据月趋势
+   *
    * @param {string} begin_date 开始日期，为自然月第一天。格式为 yyyymmdd
    * @param {string} end_date 结束日期，为自然月最后一天，限定查询一个月数据。格式为 yyyymmdd
    */
@@ -109,6 +115,7 @@ class API extends Base {
 
   /**
    * 获取用户访问小程序数据周趋势
+   *
    * @param {string} begin_date 开始日期，为周一日期。格式为 yyyymmdd
    * @param {string} end_date 结束日期，为周日日期，限定查询一周数据。格式为 yyyymmdd
    */
@@ -141,6 +148,7 @@ class API extends Base {
 
   /**
    * 获取用户小程序访问分布数据
+   *
    * @param {string} begin_date 开始日期。格式为 yyyymmdd
    * @param {string} end_date 结束日期，限定查询1天数据，允许设置的最大值为昨日。格式为 yyyymmdd
    */
@@ -155,6 +163,7 @@ class API extends Base {
 
   /**
    * 访问页面
+   *
    * @param {string} begin_date 开始日期。格式为 yyyymmdd
    * @param {string} end_date 结束日期，限定查询1天数据，允许设置的最大值为昨日。格式为 yyyymmdd
    */
@@ -169,6 +178,7 @@ class API extends Base {
 
   /**
    * 获取用户访问小程序数据概况
+   *
    * @param {string} begin_date 开始日期。格式为 yyyymmdd
    * @param {string} end_date 结束日期，限定查询1天数据，允许设置的最大值为昨日。格式为 yyyymmdd
    */
@@ -186,8 +196,10 @@ class API extends Base {
   // customerServiceMessage
   // ----------------
   /**
-   * 获取客服消息内的临时素材。
+   * 获取客服消息内的临时素材
+   *
    * 即下载临时的多媒体文件。目前小程序仅支持下载图片文件。
+   *
    * @param {string} media_id 媒体文件 ID
    *
    * @return {Buffer}
@@ -204,6 +216,7 @@ class API extends Base {
 
   /**
    * 发送客服消息给用户
+   *
    * @param {object} data
    * @param {string} data.touser 用户的 OpenID
    * @param {string} data.msgtype 消息类型
@@ -230,6 +243,7 @@ class API extends Base {
 
   /**
    * 下发客服当前输入状态给用户
+   *
    * @param {string} touser 用户的 OpenID
    * @param {string} command 命令（Typing|CancelTyping）
    *
@@ -246,12 +260,14 @@ class API extends Base {
 
   /**
    * 新增素材接口
+   *
    * 把媒体文件上传到微信服务器。
    * 目前仅支持图片。用于发送客服消息或被动回复用户消息。
-   * @param {string} type 文件类型
+   *
    * @param {FormData} media form-data 中媒体文件标识，有filename、filelength、content-type等信息
+   * @param {string} type 文件类型，默认为 image，目前只支持该值
    */
-  uploadTempMedia(type, media) {
+  uploadTempMedia(media, type = 'image') {
     return this.request({
       url: '/cgi-bin/media/upload',
       params: {
@@ -267,6 +283,7 @@ class API extends Base {
   // ----------------
   /**
    * 组合模板并添加至帐号下的个人模板库
+   *
    * @param {string} 模板标题id，可通过接口获取，也可登录小程序后台查看获取
    * @param {Array.<number>} 开发者自行组合好的模板关键词列表，关键词顺序可以自由搭配（例如[3,5,4]或[4,5,3]），最多支持10个关键词组合
    */
@@ -279,6 +296,7 @@ class API extends Base {
 
   /**
    * 删除帐号下的某个模板
+   *
    * @param {string} template_id 要删除的模板id
    */
   deleteTemplate(template_id) {
@@ -290,10 +308,11 @@ class API extends Base {
 
   /**
    * 获取帐号下**已存在**的模板列表
+   *
    * @param {number} offset 用于分页，表示从offset开始。从 0 开始计数。
    * @param {number} count 用于分页，表示拉取count条记录。最大为 20。
    */
-  getTemplateList(offset, count) {
+  getTemplateList(offset = 0, count = 20) {
     return this.request({
       url: '/cgi-bin/wxopen/template/list',
       data: {offset, count}
@@ -302,6 +321,7 @@ class API extends Base {
 
   /**
    * 获取模板库某个模板标题下关键词库
+   *
    * @param {string} id 模板标题id，可通过接口获取，也可登录小程序后台查看获取
    */
   getTemplateLibraryById(id) {
@@ -313,10 +333,11 @@ class API extends Base {
 
   /**
    * 获取小程序模板库标题列表
+   *
    * @param {number} offset 用于分页，表示从offset开始。从 0 开始计数。
    * @param {number} count 用于分页，表示拉取count条记录。最大为 20。
    */
-  getTemplateLibraryList(offset, count) {
+  getTemplateLibraryList(offset = 0, count = 20) {
     return this.request({
       url: '/cgi-bin/wxopen/template/library/list',
       data: {offset, count}
@@ -325,7 +346,9 @@ class API extends Base {
 
   /**
    * 发送模板消息
+   *
    * @name send
+   *
    * @param {object} data
    * @param {string} data.touser 接收者（用户）的 openid
    * @param {string} data.template_id 所需下发的模板消息的id
@@ -347,7 +370,9 @@ class API extends Base {
   // ----------------
   /**
    * 下发小程序和公众号统一的服务消息
+   *
    * @name send
+   *
    * @param {object} data
    * @param {string} data.tosuer 用户openid，可以是小程序的openid，也可以是mp_template_msg.appid对应的公众号的openid
    * @param {object} data.weapp_template_msg 小程序模板消息相关的信息，可以参考小程序模板消息接口; 有此节点则优先发送小程序模板消息
@@ -387,6 +412,7 @@ class API extends Base {
 
   /**
    * 修改被分享的动态消息
+   *
    * @param {object} data
    * @param {object} data.activity_id 动态消息的 ID，通过 updatableMessage.createActivityId 接口获取
    * @param {number} data.target_state 动态消息修改后的状态（具体含义见后文）0 表示未开始，1 表示已开始。
@@ -398,8 +424,8 @@ class API extends Base {
    * 其中 name 的合法值为：
    *  - `member_count` target_state = 0 时必填，文字内容模板中 member_count 的值
    *  - `room_limit` target_state = 0 时必填，文字内容模板中 room_limit 的值
-   * - `path` target_state = 1 时必填，点击「进入」启动小程序时使用的路径。对于小游戏，没有页面的概念，可以用于传递查询字符串（query），如 "?foo=bar"
-   * - `version_type` target_state = 1 时必填，点击「进入」启动小程序时使用的版本。有效参数值为：develop（开发版），trial（体验版），release（正式版）
+   *  - `path` target_state = 1 时必填，点击「进入」启动小程序时使用的路径。对于小游戏，没有页面的概念，可以用于传递查询字符串（query），如 "?foo=bar"
+   *  - `version_type` target_state = 1 时必填，点击「进入」启动小程序时使用的版本。有效参数值为：develop（开发版），trial（体验版），release（正式版）
    */
   setUpdatableMsg(data) {
     return this.request({
@@ -414,6 +440,7 @@ class API extends Base {
   // ----------------
   /**
    * 向插件开发者发起使用插件的申请
+   *
    * @param {string} plugin_appid 插件 appId
    * @param {string} reason 申请使用理由
    */
@@ -430,10 +457,11 @@ class API extends Base {
 
   /**
    * 获取当前所有插件使用方（供插件开发者调用）
+   *
    * @param {number} 要拉取第几页的数据
    * @param {number} 每页的记录数
    */
-  getPluginDevApplyList(page, num) {
+  getPluginDevApplyList(page = 1, num = 20) {
     return this.request({
       url: '/wxa/devplugin',
       data: {
@@ -458,6 +486,7 @@ class API extends Base {
 
   /**
    * 修改插件使用申请的状态（供插件开发者调用）
+   *
    * @param {string} action 修改操作
    *  - dev_agree 同意申请
    *  - dev_refuse 拒绝申请
@@ -476,6 +505,7 @@ class API extends Base {
 
   /**
    * 删除已添加的插件
+   *
    * @param {string} plugin_appid 插件 appId
    */
   unbindPlugin(plugin_appid) {
@@ -494,7 +524,9 @@ class API extends Base {
   // ----------------
   /**
    * 添加地点
+   *
    * @name add
+   *
    * @param {string} data.related_name 经营资质主体，必填
    * @param {string} data.related_credential 经营资质证件号，必填
    * @param {string} data.related_address 经营资质地址，必填
@@ -509,7 +541,9 @@ class API extends Base {
 
   /**
    * 删除地点
+   *
    * @name delete
+   *
    * @param {string} poi_id 附近地点 ID
    */
   delNearbyPOI(poi_id) {
@@ -523,11 +557,13 @@ class API extends Base {
 
   /**
    * 查看地点列表
+   *
    * @name getList
+   *
    * @param {number} page 起始页id（从1开始计数）
    * @param {number} page_rows 每页展示个数（最多1000个）
    */
-  getNearbyPOIList(page, page_rows) {
+  getNearbyPOIList(page = 1, page_rows = 20) {
     return this.request({
       url: '/wxa/getnearbypoilist',
       params: {
@@ -538,6 +574,7 @@ class API extends Base {
 
   /**
    * 展示/取消展示附近小程序
+   *
    * @name setShowStatus
    * @param {string} poi_id 附近地点 ID
    * @param {number} status 是否展示
@@ -559,13 +596,15 @@ class API extends Base {
   // ----------------
   /**
    * 获取小程序二维码
+   *
    * 适用于需要的码数量较少的业务场景。通过该接口生成的小程序码，永久有效，有数量限制
+   *
    * @param {string} path 必填。扫码进入的小程序页面路径，最大长度 128 字节，不能为空；对于小游戏，可以只传入 query 部分，来实现传参效果，如：传入 "?foo=bar"，即可在 wx.getLaunchOptionsSync 接口中的 query 参数获取到 {foo:"bar"}
    * @param {number} width 二维码的宽度，单位 px。最小 280px，最大 1280px
    *
    * @return {Buffer}
    */
-  createQRCode(path, width) {
+  createQRCode(path, width = 430) {
     return this.request({
       url: '/cgi-bin/wxaapp/createwxaqrcode',
       data: {
@@ -576,8 +615,11 @@ class API extends Base {
 
   /**
    * 获取小程序码
-   * @name get
+   *
    * 适用于需要的码数量较少的业务场景。通过该接口生成的小程序码，永久有效，有数量限制
+   *
+   * @name get
+   *
    * @param {string} path 必填。扫码进入的小程序页面路径，最大长度 128 字节，不能为空；对于小游戏，可以只传入 query 部分，来实现传参效果，如：传入 "?foo=bar"，即可在 wx.getLaunchOptionsSync 接口中的 query 参数获取到 {foo:"bar"}
    * @param {object} options 生成选项
    * @param {number} options.width 二维码的宽度，单位 px。最小 280px，最大 1280px
@@ -664,6 +706,7 @@ class API extends Base {
   // ----------------
   /**
    * 生成运单
+   *
    * @param {object} data
    * @param {string} data.order_id 订单ID，须保证全局唯一，不超过512字节
    * @param {string} data.openid 用户 openid
@@ -688,6 +731,7 @@ class API extends Base {
 
   /**
    * 取消运单
+   *
    * @param {object} data
    * @param {string} data.order_id 订单 ID，需保证全局唯一
    * @param {string} data.openid 用户 openid
@@ -713,6 +757,7 @@ class API extends Base {
 
   /**
    * 获取运单数据
+   *
    * @param {object} data
    * @param {string} data.order_id 订单 ID，需保证全局唯一
    * @param {string} data.openid 用户 openid
@@ -728,6 +773,7 @@ class API extends Base {
 
   /**
    * 查询运单轨迹
+   *
    * @param {object} data
    * @param {string} data.order_id 订单 ID，需保证全局唯一
    * @param {string} data.openid 用户 openid
@@ -755,6 +801,7 @@ class API extends Base {
 
   /**
    * 获取电子面单余额
+   *
    * @param {string} delivery_id 快递公司ID，参见getAllDelivery
    * @param {string} biz_id 快递公司客户编码
    */
@@ -769,7 +816,9 @@ class API extends Base {
 
   /**
    * 更新打印员
+   *
    * 若需要使用微信打单 PC 软件，才需要调用。
+   *
    * @param {string} openid 打印员 openid
    * @param {string} update_type 更新类型
    */
@@ -803,6 +852,7 @@ class API extends Base {
 
   /**
    * 预览面单模板
+   *
    * 用于调试面单模板使用。
    *
    * @param {string} data.waybill_id 运单 ID
@@ -819,6 +869,7 @@ class API extends Base {
 
   /**
    * 更新商户审核结果
+   *
    * @param {object} data
    * @param {string} data.shop_app_id 商户的小程序AppID，即审核商户事件中的 ShopAppID
    * @param {string} data.biz_id 商户账户
@@ -834,12 +885,14 @@ class API extends Base {
 
   /**
    * 更新运单轨迹
+   *
    * @param {object} data
    * @param {string} data.token 商户侧下单事件中推送的 Token 字段
    * @param {string} data.waybill_id 运单 ID
    * @param {number} data.action_time 轨迹变化 Unix 时间戳
    * @param {number} data.action_type 轨迹变化类型
    * @param {string} data.action_msg 轨迹变化具体信息说明，展示在快递轨迹详情页中。若有手机号码，则直接写11位手机号码。使用UTF-8编码。
+   *
    * action_type 的合法值
    *  - 100001 揽件阶段-揽件成功
    *  - 100002 揽件阶段-揽件失败
@@ -864,6 +917,7 @@ class API extends Base {
   // ----------------
   /**
    * SOTER 生物认证秘钥签名验证
+   *
    * @param {object} data
    * @param {string} data.openid 用户 openid
    * @param {string} data.json_string 通过 wx.startSoterAuthentication 成功回调获得的 resultJSON 字段
