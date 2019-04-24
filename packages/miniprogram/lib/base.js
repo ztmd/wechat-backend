@@ -47,10 +47,10 @@ class Base {
     this.tokenObj = {}
     this.sessionKeyObj = {}
 
-    this._init()
+    this.init()
   }
 
-  _init() {
+  init() {
 
     // 从缓存文件中加载 token 和 session 信息，模拟中继服务器
     // 可以修改为采用 redis 或者 mongodb 等方式
@@ -66,44 +66,6 @@ class Base {
   log(...args) {
     if (this.printLog)
       console.log(args)
-  }
-
-  /**
-   * 发送请求
-   * 带有 access_token
-   * @param {*} options
-   */
-  request(options) {
-
-    if (!options.method) {
-      options.method = 'post'
-    }
-
-    return new Promise((resolve, reject) => {
-      this.getAccessToken().then(({access_token}) => {
-        if (options.params) {
-          options.params.access_token = access_token
-        } else {
-          options.params = {access_token}
-        }
-        this.axios(options).then(response => {
-          const res = {...response.data}
-
-          if (+res.errcode) {
-            reject(res)
-          } else {
-            resolve(res)
-          }
-          this.log('then', response)
-        }).catch(error2 => {
-          reject(error2)
-          this.log('catch', error2)
-        })
-      }).catch(error => {
-        reject(error)
-      })
-
-    })
   }
 
   /**
@@ -130,6 +92,36 @@ class Base {
   }
 
   /**
+   * 发送请求
+   * 带有 access_token
+   * @param {*} options
+   */
+  request(options) {
+
+    if (!options.method) {
+      options.method = 'post'
+    }
+
+    return new Promise((resolve, reject) => {
+      this.getAccessToken().then(({access_token}) => {
+        if (options.params) {
+          options.params.access_token = access_token
+        } else {
+          options.params = {access_token}
+        }
+        this._request(options).then(res => {
+          resolve(res)
+        }).catch(error2 => {
+          reject(error2)
+        })
+      }).catch(error => {
+        reject(error)
+      })
+
+    })
+  }
+
+  /**
    * 获取 accessToken
    */
   getAccessToken() {
@@ -152,7 +144,7 @@ class Base {
       }).then(data => {
         // 获取 access_token 之后更新缓存
         data._time = Date.now()
-        tokenObj = data
+        this.tokenObj = data
         fs.writeFile(CACHE_FILE, JSON.stringify(data), () => {})
         resolve(data)
       }).catch(error => {
