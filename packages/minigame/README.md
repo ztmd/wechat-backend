@@ -14,14 +14,24 @@ const api = new API({
 api[method](...)
 ```
 
+初始化 API 的 `options` 参数说明：
+
+- `appId`，**必需**，小程序唯一凭证，即 AppID，可在「微信公众平台 - 设置 - 开发设置」页中获得。（需要已经成为开发者，且帐号没有异常状态）
+- `appSecret`，**必需**，小程序唯一凭证密钥，即 AppSecret，获取方式同 AppID
+- `midasOfferId`，米大师分配的 offer_id
+- `midasSecret` 米大师密钥
+- `baseURL`，请求的基地址，如遇到异常，可以更换到备用服务器
+- `timeout`，请求的超时时间，默认为 40 秒
+- `printLog`，是否输出请求日志，供内部开发调试使用
+
 ## API Methods List
 
 名称|官方文档|功能
 ----|----|---
-midasCancelPay/midasCancelPaySandbox|[midas.cancelPay](https://developers.weixin.qq.com/minigame/dev/api-backend/midas.cancelPay.html)|取消订单
-midasGetBalance/midasGetBalanceSandbox|[midas.getBalance](https://developers.weixin.qq.com/minigame/dev/api-backend/midas.getBalance.html)|获取游戏币余额
-midasPay/midasPaySandbox|[midas.pay](https://developers.weixin.qq.com/minigame/dev/api-backend/midas.pay.html)|扣除游戏币
-midasPresent/midasPresentSandbox|[midas.present](https://developers.weixin.qq.com/minigame/dev/api-backend/midas.present.html)|给用户赠送游戏币
+midasCancelPay<br>midasCancelPaySandbox|[midas.cancelPay](https://developers.weixin.qq.com/minigame/dev/api-backend/midas.cancelPay.html)|取消订单
+midasGetBalance<br>midasGetBalanceSandbox|[midas.getBalance](https://developers.weixin.qq.com/minigame/dev/api-backend/midas.getBalance.html)|获取游戏币余额
+midasPay<br>midasPaySandbox|[midas.pay](https://developers.weixin.qq.com/minigame/dev/api-backend/midas.pay.html)|扣除游戏币
+midasPresent<br>midasPresentSandbox|[midas.present](https://developers.weixin.qq.com/minigame/dev/api-backend/midas.present.html)|给用户赠送游戏币
 getAccessToken|[auth.getAccessToken](https://developers.weixin.qq.com/minigame/dev/api-backend/auth.getAccessToken.html)|获取小程序全局唯一后台接口调用凭据（access_token）
 checkSessionKey|[auth.checkSessionKey](https://developers.weixin.qq.com/minigame/dev/api-backend/auth.checkSessionKey.html)|校验服务器所保存的登录态 session_key 是否合法
 code2Session|[auth.code2Session](https://developers.weixin.qq.com/minigame/dev/api-backend/auth.code2Session.html)|登录凭证校验
