@@ -8,6 +8,11 @@ const axios = require('axios')
 const CACHE_FILE = path.join(__dirname, 'cache_minigame.json')
 const SESSION_KEY_FILE = path.join(__dirname, 'session_key_minigame.json')
 
+const {
+  genMidasSigSign,
+  genMidasMpSigSign
+} = require('../utils/sign')
+
 /**
  * 基础类
  * @constructor
@@ -15,9 +20,12 @@ const SESSION_KEY_FILE = path.join(__dirname, 'session_key_minigame.json')
 class Base {
   /**
    * 创建
+   *
    * @param {object} options
    * @param {string} options.appId 小程序唯一凭证，即 AppID，可在「微信公众平台 - 设置 - 开发设置」页中获得。（需要已经成为开发者，且帐号没有异常状态）
    * @param {string} options.appSecret 小程序唯一凭证密钥，即 AppSecret，获取方式同 appid
+   * @param {string} options.midasOfferId 米大师分配的offer_id
+   * @param {string} options.midasSecret 米大师密钥
    * @param {string} options.baseURL 请求的基地址
    * @param {string} options.timeout 请求的超时时间，默认为 40 秒
    * @param {string} options.printLog 是否输出请求日志，供内部开发调试使用
@@ -29,12 +37,16 @@ class Base {
   constructor({
     appId,
     appSecret,
+    midasOfferId,
+    midasSecret,
     baseURL = 'https://api.weixin.qq.com',
     timeout = 40000,
     printLog = false
   }) {
     this.appId = appId
     this.appSecret = appSecret
+    this.midasOfferId = midasOfferId
+    this.midasSecret = midasSecret
     this.baseURL = baseURL
 
     this.axios = axios.create({
@@ -47,10 +59,10 @@ class Base {
     this.tokenObj = {}
     this.sessionKeyObj = {}
 
-    this._init()
+    this.init()
   }
 
-  _init() {
+  init() {
 
     // 从缓存文件中加载 token，模拟中继服务器
     // 可以修改为采用 redis 或者 mongodb 等方式
@@ -70,46 +82,10 @@ class Base {
 
   /**
    * 发送请求
-   * 带有 access_token
-   * @param {*} options
-   */
-  request(options) {
-
-    if (!options.method) {
-      options.method = 'post'
-    }
-
-    return new Promise((resolve, reject) => {
-      this.getAccessToken().then(({access_token}) => {
-        if (options.params) {
-          options.params.access_token = access_token
-        } else {
-          options.params = {access_token}
-        }
-        this.axios(options).then(response => {
-          const res = {...response.data}
-
-          if (+res.errcode) {
-            reject(res)
-          } else {
-            resolve(res)
-          }
-          this.log('then', response)
-        }).catch(error2 => {
-          reject(error2)
-          this.log('catch', error2)
-        })
-      }).catch(error => {
-        reject(error)
-      })
-
-    })
-  }
-
-  /**
-   * 发送请求
+   *
    * 不带 access_token，内部使用
-   * @param {*} options
+   *
+   * @param {object} options 传给 axios 的请求参数
    */
   _request(options) {
     return new Promise((resolve, reject) => {
@@ -126,6 +102,39 @@ class Base {
         reject(error)
         this.log('catch', error)
       })
+    })
+  }
+
+  /**
+   * 发送请求
+   *
+   * 带有 access_token
+   *
+   * @param {object} options 传给 axios 的请求参数
+   * @param {string} options.method 请求方式，默认为 POST
+   */
+  request(options) {
+
+    if (!options.method) {
+      options.method = 'post'
+    }
+
+    return new Promise((resolve, reject) => {
+      this.getAccessToken().then(({access_token}) => {
+        if (options.params) {
+          options.params.access_token = access_token
+        } else {
+          options.params = {access_token}
+        }
+        this._request(options).then(res => {
+          resolve(res)
+        }).catch(error2 => {
+          reject(error2)
+        })
+      }).catch(error => {
+        reject(error)
+      })
+
     })
   }
 
@@ -162,7 +171,45 @@ class Base {
   }
 
   /**
+   * 米大师请求接口
+   *
+   * @param {string} url 请求的 URI
+   * @param {object} data 请求的参数
+   */
+  _midas({url, data = {}}) {
+    const session_key = this.sessionKeyObj[data.openid]
+    return new Promise((resolve, reject) => {
+      this.getAccessToken().then(({access_token}) => {
+
+        data.appid = this.appId
+        data.offer_id = this.midasOfferId
+        data.ts = Math.floor(Date.now() / 1000)
+
+        // 计算签名
+        data.sig = genMidasSigSign(data, url, this.midasSecret)
+        data.mp_sig = genMidasMpSigSign(data, url, access_token, session_key)
+
+        this._request({
+          url,
+          method: 'post',
+          params: {
+            access_token
+          },
+          data: data
+        }).then(res => {
+          resolve(res)
+        }).catch(error2 => {
+          reject(error2)
+        })
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  }
+
+  /**
    * 登录凭证校验
+   *
    * @param {String} code 登录时获取的 code
    */
   code2Session(code) {
