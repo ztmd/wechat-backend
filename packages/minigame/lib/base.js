@@ -178,6 +178,12 @@ class Base {
    */
   _midas({url, data = {}}) {
     const session_key = this.sessionKeyObj[data.openid]
+
+    // 如果没有 session_key，则提前返回
+    if (!session_key) {
+      return Promise.reject(401)
+    }
+
     return new Promise((resolve, reject) => {
       this.getAccessToken().then(({access_token}) => {
 
@@ -195,7 +201,7 @@ class Base {
           params: {
             access_token
           },
-          data: data
+          data
         }).then(res => {
           resolve(res)
         }).catch(error2 => {
