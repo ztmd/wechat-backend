@@ -13,31 +13,44 @@ class API extends Base {
   // midas
   // ----------------
   /**
+   * [虚拟支付]{@link https://developers.weixin.qq.com/minigame/dev/tutorial/open-ability/payment.html}
+   *
+   * 米大师通用参数
+   *
+   * @param {string} appid 小程序 appId
+   * @param {string} offer_id 米大师分配的offer_id
+   * @param {number} ts UNIX 时间戳，单位是秒
+   *
+   * 这三个参数在米大师接口进行请求的时候**不需要显式传递**
+   * appId 和 offerId 在对象初始化给定，ts 取当前时间戳
+   *
+   * 每个方法提供两套接口，名字以 Sandbox 结尾表示为沙箱环境
+   *
+   * **签名会自动进行计算**，不需要进行传递
+   *
+   * @param {string} data.sig 以上所有参数（含可选最多9个）+uri+米大师密钥，用 HMAC-SHA256签名，详见 米大师支付签名算法
+   * @param {string} data.mp_sig 以上所有参数（含可选最多11个）+uri+session_key，用 HMAC-SHA256签名，详见 米大师支付签名算法
+   *
+   */
+  /**
    * 取消订单
+   *
    * @param {object} data
    * @param {string} data.openid 用户唯一标识符
-   * @param {string} data.offer_id 米大师分配的offer_id
-   * @param {number} data.ts UNIX 时间戳，单位是秒
    * @param {string} data.zone_id 游戏服务器大区id,游戏不分大区则默认zoneId ="1",String类型。如过应用选择支持角色，则角色ID接在分区ID号后用"_"连接。
    * @param {string} data.pf 平台 安卓：android
    * @param {string} data.user_ip 用户外网 IP
    * @param {string} data.bill_no 订单号，业务需要保证全局唯一；相同的订单号不会重复扣款。长度不超过63，只能是数字、大小写字母_-
    * @param {string} data.pay_item 道具名称
-   * @param {string} data.sig 以上所有参数（含可选最多9个）+uri+米大师密钥，用 HMAC-SHA256签名，详见 米大师支付签名算法
-   * @param {string} data.mp_sig 以上所有参数（含可选最多11个）+uri+session_key，用 HMAC-SHA256签名，详见 米大师支付签名算法
    */
   midasCancelPay(data) {
-    data.appid = this.appId
-
-    return this.request({
+    return this._midas({
       url: '/cgi-bin/midas/cancelpay',
       data
     })
   }
   midasCancelPaySandbox(data) {
-    data.appid = this.appId
-
-    return this.request({
+    return this._midas({
       url: '/cgi-bin/midas/sandbox/cancelpay',
       data
     })
@@ -45,29 +58,22 @@ class API extends Base {
 
   /**
    * 获取游戏币余额
+   *
    * 开通了虚拟支付的小游戏，可以通过本接口查看某个用户的游戏币余额
    *
    * @param {string} data.openid 用户唯一标识符
-   * @param {string} data.offer_id 米大师分配的offer_id
-   * @param {number} data.ts UNIX 时间戳，单位是秒
    * @param {string} data.zone_id 游戏服务器大区id,游戏不分大区则默认zoneId ="1",String类型。如过应用选择支持角色，则角色ID接在分区ID号后用"_"连接。
    * @param {string} data.pf 平台 安卓：android
    * @param {string} data.user_ip 用户外网 IP
-   * @param {string} data.sig 以上所有参数（含可选最多9个）+uri+米大师密钥，用 HMAC-SHA256签名，详见 米大师支付签名算法
-   * @param {string} data.mp_sig 以上所有参数（含可选最多11个）+uri+session_key，用 HMAC-SHA256签名，详见 米大师支付签名算法
    */
   midasGetBalance(data) {
-    data.appid = this.appId
-
-    return this.request({
+    return this._midas({
       url: '/cgi-bin/midas/getbalance',
       data
     })
   }
   midasGetBalanceSandBox(data) {
-    data.appid = this.appId
-
-    return this.request({
+    return this._midas({
       url: '/cgi-bin/midas/sandbox/getbalance',
       data
     })
@@ -80,8 +86,6 @@ class API extends Base {
    *
    * @param {object} data
    * @param {string} data.openid 用户唯一标识符
-   * @param {string} data.offer_id 米大师分配的offer_id
-   * @param {number} data.ts UNIX 时间戳，单位是秒
    * @param {string} data.zone_id 游戏服务器大区id,游戏不分大区则默认zoneId ="1",String类型。如过应用选择支持角色，则角色ID接在分区ID号后用"_"连接。
    * @param {string} data.pf 平台 安卓：android
    * @param {string} data.user_ip 用户外网 IP
@@ -89,21 +93,15 @@ class API extends Base {
    * @param {string} data.bill_no 订单号，业务需要保证全局唯一；相同的订单号不会重复扣款。长度不超过63，只能是数字、大小写字母_-
    * @param {string} data.pay_item 道具名称
    * @param {string} data.app_remark 备注。会写到账户流水
-   * @param {string} data.sig 以上所有参数（含可选最多9个）+uri+米大师密钥，用 HMAC-SHA256签名，详见 米大师支付签名算法
-   * @param {string} data.mp_sig 以上所有参数（含可选最多11个）+uri+session_key，用 HMAC-SHA256签名，详见 米大师支付签名算法
    */
   midasPay(data) {
-    data.appid = this.appId
-
-    return this.request({
+    return this._midas({
       url: '/cgi-bin/midas/pay',
       data
     })
   }
   midasPaySandbox(data) {
-    data.appid = this.appId
-
-    return this.request({
+    return this._midas({
       url: '/cgi-bin/midas/sandbox/pay',
       data
     })
@@ -116,28 +114,20 @@ class API extends Base {
    *
    * @param {object} data
    * @param {string} data.openid 用户唯一标识符
-   * @param {string} data.offer_id 米大师分配的offer_id
-   * @param {number} data.ts UNIX 时间戳，单位是秒
    * @param {string} data.zone_id 游戏服务器大区id,游戏不分大区则默认zoneId ="1",String类型。如过应用选择支持角色，则角色ID接在分区ID号后用"_"连接。
    * @param {string} data.pf 平台 安卓：android
    * @param {string} data.user_ip 用户外网 IP
    * @param {string} data.bill_no 订单号，业务需要保证全局唯一；相同的订单号不会重复扣款。长度不超过63，只能是数字、大小写字母_-
    * @param {number} data.present_counts 赠送游戏币的个数，不能为0
-   * @param {string} data.sig 以上所有参数（含可选最多9个）+uri+米大师密钥，用 HMAC-SHA256签名，详见 米大师支付签名算法
-   * @param {string} data.mp_sig 以上所有参数（含可选最多11个）+uri+session_key，用 HMAC-SHA256签名，详见 米大师支付签名算法
    */
   midasPresent(data) {
-    data.appid = this.appId
-
-    return this.request({
+    return this._midas({
       url: '/cgi-bin/midas/present',
       data
     })
   }
   midasPresentSandbox(data) {
-    data.appid = this.appId
-
-    return this.request({
+    return this._midas({
       url: '/cgi-bin/midas/sandbox/present',
       data
     })
@@ -148,7 +138,9 @@ class API extends Base {
   // ----------------
   /**
    * 校验服务器所保存的登录态 session_key 是否合法
+   *
    * 为了保持 session_key 私密性，接口不明文传输 session_key，而是通过校验登录态签名完成。
+   *
    * @param {string} openid 用户唯一标识符
    * @param {string} signature 用户登录态签名
    * @param {string} sig_method 用户登录态签名的哈希方法，目前只支持 hmac_sha256
@@ -210,6 +202,7 @@ class API extends Base {
   // ----------------
   /**
    * 删除已经上报到微信的key-value数据
+   *
    * @param {string[]} key 要删除的数据key列表
    * @param {string} openid 用户唯一标识符
    * @param {string} signature 用户登录态签名，签名算法请参考用户登录态签名算法
@@ -229,7 +222,9 @@ class API extends Base {
 
   /**
    * 上报用户数据后台接口
+   *
    * 小游戏可以通过本接口上报key-value数据到用户的CloudStorage。
+   *
    * @param {Array.<object>} kv_list 要上报的数据
    * @param {string} kv_list[].key 数据的key
    * @param {string} kv_list[].value 数据的value
@@ -264,6 +259,7 @@ class API extends Base {
 
   /**
    * 修改被分享的动态消息
+   *
    * @param {object} data
    * @param {object} data.activity_id 动态消息的 ID，通过 updatableMessage.createActivityId 接口获取
    * @param {number} data.target_state 动态消息修改后的状态（具体含义见后文）0 表示未开始，1 表示已开始。
@@ -275,8 +271,8 @@ class API extends Base {
    * 其中 name 的合法值为：
    *  - `member_count` target_state = 0 时必填，文字内容模板中 member_count 的值
    *  - `room_limit` target_state = 0 时必填，文字内容模板中 room_limit 的值
-   * - `path` target_state = 1 时必填，点击「进入」启动小程序时使用的路径。对于小游戏，没有页面的概念，可以用于传递查询字符串（query），如 "?foo=bar"
-   * - `version_type` target_state = 1 时必填，点击「进入」启动小程序时使用的版本。有效参数值为：develop（开发版），trial（体验版），release（正式版）
+   *  - `path` target_state = 1 时必填，点击「进入」启动小程序时使用的路径。对于小游戏，没有页面的概念，可以用于传递查询字符串（query），如 "?foo=bar"
+   *  - `version_type` target_state = 1 时必填，点击「进入」启动小程序时使用的版本。有效参数值为：develop（开发版），trial（体验版），release（正式版）
    */
   setUpdatableMsg(data) {
     return this.request({
@@ -291,13 +287,15 @@ class API extends Base {
   // ----------------
   /**
    * 获取小程序二维码
+   *
    * 适用于需要的码数量较少的业务场景。通过该接口生成的小程序码，永久有效，有数量限制
+   *
    * @param {string} path 必填。扫码进入的小程序页面路径，最大长度 128 字节，不能为空；对于小游戏，可以只传入 query 部分，来实现传参效果，如：传入 "?foo=bar"，即可在 wx.getLaunchOptionsSync 接口中的 query 参数获取到 {foo:"bar"}
    * @param {number} width 二维码的宽度，单位 px。最小 280px，最大 1280px
    *
    * @return {Buffer}
    */
-  createQRCode(path, width) {
+  createQRCode(path, width = 430) {
     return this.request({
       url: '/cgi-bin/wxaapp/createwxaqrcode',
       data: {
@@ -308,8 +306,11 @@ class API extends Base {
 
   /**
    * 获取小程序码
-   * @name get
+   *
    * 适用于需要的码数量较少的业务场景。通过该接口生成的小程序码，永久有效，有数量限制
+   *
+   * @name get
+   *
    * @param {string} path 必填。扫码进入的小程序页面路径，最大长度 128 字节，不能为空；对于小游戏，可以只传入 query 部分，来实现传参效果，如：传入 "?foo=bar"，即可在 wx.getLaunchOptionsSync 接口中的 query 参数获取到 {foo:"bar"}
    * @param {object} options 生成选项
    * @param {number} options.width 二维码的宽度，单位 px。最小 280px，最大 1280px
