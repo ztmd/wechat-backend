@@ -9,8 +9,8 @@ const CACHE_FILE = path.join(__dirname, 'cache_minigame.json')
 const SESSION_KEY_FILE = path.join(__dirname, 'session_key_minigame.json')
 
 const {
-  genMidasSigSign,
-  genMidasMpSigSign
+  genMidasSig,
+  genMidasMpSig
 } = require('../utils/sign')
 
 /**
@@ -192,8 +192,8 @@ class Base {
         data.ts = Math.floor(Date.now() / 1000)
 
         // 计算签名
-        data.sig = genMidasSigSign(data, url, this.midasSecret)
-        data.mp_sig = genMidasMpSigSign(data, url, access_token, session_key)
+        data.sig = genMidasSig(data, url, this.midasSecret)
+        data.mp_sig = genMidasMpSig(data, url, access_token, session_key)
 
         this._request({
           url,

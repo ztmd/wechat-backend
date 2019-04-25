@@ -10,7 +10,7 @@ const crypto = require('crypto')
  * @param {string} uri 请求的 URI
  * @param {string} secret 米大师密钥
  */
-function genMidasSigSign(data, uri, secret) {
+function genMidasSig(data, uri, secret) {
   const ret = []
 
   Object.keys(data).sort().forEach(item => {
@@ -33,7 +33,7 @@ function genMidasSigSign(data, uri, secret) {
  * @param {string} access_token 小程序接口调用凭证
  * @param {string} session_key 当前会话密钥
  */
-function genMidasMpSigSign(data, uri, access_token, session_key) {
+function genMidasMpSig(data, uri, access_token, session_key) {
   const ret = []
   const mpSigData = {
     ...data,
@@ -54,6 +54,6 @@ function genMidasMpSigSign(data, uri, access_token, session_key) {
 }
 
 module.exports = {
-  genMidasSigSign,
-  genMidasMpSigSign
+  genMidasSig,
+  genMidasMpSig
 }
