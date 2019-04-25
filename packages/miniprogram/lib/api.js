@@ -458,8 +458,8 @@ class API extends Base {
   /**
    * 获取当前所有插件使用方（供插件开发者调用）
    *
-   * @param {number} 要拉取第几页的数据
-   * @param {number} 每页的记录数
+   * @param {number} page 要拉取第几页的数据
+   * @param {number} num 每页的记录数
    */
   getPluginDevApplyList(page = 1, num = 20) {
     return this.request({
@@ -491,8 +491,8 @@ class API extends Base {
    *  - dev_agree 同意申请
    *  - dev_refuse 拒绝申请
    *  - dev_delete 删除已拒绝的申请者
-   * @param {string} appid
-   * @param {string} reason
+   * @param {string} appid 使用者的 appid。同意申请时填写。
+   * @param {string} reason 拒绝理由。拒绝申请时填写。
    */
   setDevPluginApplyStatus(action, appid, reason) {
     return this.request({
