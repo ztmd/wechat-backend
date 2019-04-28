@@ -82,6 +82,34 @@ class Base {
   }
 
   /**
+   * 将参数列表转为对象形式
+   *
+   * @param {array} args 参数原始对象，即 arguments
+   * @param {array} names 参数名称对应的数组
+   * @param {array} defaults 参数值为 undefined 时的补正值
+   *
+   * 注意：
+   *  - 参数的值支持覆盖
+   *  - 在遇到对象之后直接退出
+   *
+   * 示例：
+   *   > _args([1, 2, {xor: true}], ['offset', 'count'])
+   *   < {offset: 1, count: 2, xor: true}
+   */
+  _args(args, names, defaults) {
+    const options = {}
+    for (let i = 0; i < args.length; i++) {
+      if (typeof args[i] === 'object') {
+        Object.assign(options, args[i])
+        break;
+      } else {
+        options[names[i]] = args[i] === undefined ? defaults[i] : args[i]
+      }
+    }
+    return options
+  }
+
+  /**
    * 发送请求
    * 不带 access_token，内部使用
    */
