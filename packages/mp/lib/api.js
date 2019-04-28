@@ -332,7 +332,7 @@ class API extends Base {
    * @param {boolean} data.filter.is_to_all 用于设定是否向全部用户发送，值为true或false，选择true该消息群发给所有用户，选择false可根据tag_id发送给指定群组的用户
    * @param {string} data.filter.tag_id 群发到的标签的tag_id，参见用户管理中用户分组接口，若is_to_all值为true，可不填写tag_id
    * @param {string} data.msgtype 群发的消息类型，图文消息为mpnews，文本消息为text，语音为voice，音乐为music，图片为image，视频为video，卡券为wxcard
-   * @param {stirng} data.send_ignore_reprint 消息被判定为转载时，是否继续群发。 1为继续群发（转载），0为停止群发。 该参数默认为0。
+   * @param {string} data.send_ignore_reprint 消息被判定为转载时，是否继续群发。 1为继续群发（转载），0为停止群发。 该参数默认为0。
    *
    * @param {object} data.mpnews 用于设定即将发送的图文消息
    * @param {string} data.mpnews.media_id 素材ID
@@ -1557,7 +1557,7 @@ class API extends Base {
   // 微信卡券
   // ----------------
   /**
-   * 创建卡券
+   * 创建卡券/会员卡/特殊票券
    *
    * @param {string(24)} card_type 团购券类型
    * @param {object} data 卡券数据
@@ -1568,6 +1568,10 @@ class API extends Base {
    *  - DISCOUNT 折扣券
    *  - GIFT 兑换券
    *  - MEMBER_CARD 会员卡
+   *  - MEETING_TICKET 会议门票
+   *  - SCENIC_TICKET 景区门票
+   *  - MOVIE_TICKET 电影票
+   *  - BOARDING_PASS 飞机票
    *
    */
   createCard(card_type = 'GROUPON', data = {}) {
@@ -2496,31 +2500,736 @@ class API extends Base {
   /**
    * 查询券点流水详情接口
    *
-   * @param {number} order_id 上一步中获得的订单号，作为一次交易的唯一凭证
+   * @param {number} offset 分批查询的起点，默认为0
+   * @param {number} count 分批查询的数量
+   * @param {timestamp} begin_time 批量查询订单的起始事件，为时间戳，默认1周前
+   * @param {timestamp} end_time 批量查询订单的结束事件，为时间戳，默认为当前时间
+   * @param {string} order_type 所要拉取的订单类型 ORDER_TYPE_SYS_ADD 平台赠送 ORDER_TYPE_WXPAY 充值 ORDER_TYPE_REFUND 库存回退券点 ORDER_TYPE_REDUCE 券点兑换库存 ORDER_TYPE_SYS_REDUCE 平台扣减
+   *
+   * @param {object} options 其他选项
+   * @param {object} options.nor_filter
+   * @param {object} options.sort_info
    */
-  getCardPayOrderList(order_id) {
+  getCardPayOrderList(offset, count, begin_time, end_time, order_type, options) {
+    const data = this._args(arguments, ['offset', 'count', 'begin_time', 'end_time', 'order_type'])
     return this.request({
       url: '/card/pay/getorderlist',
+      data
+    })
+  }
+
+  /**
+   * Mark(占用)Code接口
+   *
+   * @param {string} card_id 卡券的ID。
+   * @param {string} code 卡券的code码。
+   * @param {string} openid 用券用户的openid。
+   * @param {boolean} is_mark 是否要mark（占用）这个code，填写true或者false，表示占用或解除占用。
+   *
+   * 不调用接口解除mark的话，5分钟后自动解除。（时间可能根据产品策略调整）
+   */
+  markCardCode(card_id, code, openid, is_mark) {
+    return this.request({
+      url: '/card/code/mark',
       data: {
-        order_id
+        card_id, code, openid, is_mark
       }
     })
   }
 
+  /**
+   * 更新会议门票
+   *
+   * @param {object} data
+   * @param {string} data.code 卡券Code码。
+   * @param {string} data.card_id 要更新门票序列号所述的card_id，生成券时use_custom_code 填写true 时必填。
+   * @param {timestamp} data.begin_time 开场时间，微信会在开场时间前两小时通过制票公众阿訇或者服务通知下发开场提醒，Unix时间戳格式。
+   * @param {timestamp} data.end_time 结束时间，Unix时间戳格式。
+   * @param {string} data.zone 区域。
+   * @param {string} data.entrance 入口。
+   * @param {string} data.seat_number 座位号。
+   */
+  updateMeetingTicket(data) {
+    return this.request({
+      url: '/card/meetingticket/updateuser',
+      data
+    })
+  }
 
+  /**
+   * 更新电影票
+   *
+   * @param {object} data
+   * @param {string} data.code 卡券Code码。
+   * @param {string} data.card_id 要更新门票序列号所述的card_id，生成券时use_custom_code 填写true 时必填。
+   * @param {string} data.ticket_class 电影票的类别，如2D、3D。
+   * @param {string} data.screening_room 该场电影的影厅信息。
+   * @param {string} data.seat_number 座位号。
+   * @param {timestamp} data.show_time 电影的放映时间，Unix时间戳格式。
+   * @param {number} data.duration 放映时长,，填写整数。
+   */
+  updateMovieTicket(data) {
+    return this.request({
+      url: '/card/movieticket/updateuser',
+      data
+    })
+  }
 
-  noop() {}
+  /**
+   * 更新飞机票信息
+   *
+   * @param {object} data
+   * @param {string} data.code 卡券Code码。
+   * @param {string} data.card_id 卡券ID，自定义Code码的卡券必填。
+   * @param {string} data.etkt_bnr 电子客票号，上限为14个数字。
+   * @param {string} data.class 舱等，如头等舱等，上限为5个汉字。
+   * @param {string} data.qrcode_data 二维码数据。乘客用于值机的二维码字符串，微信会通过此数据为用户生成值机用的二维码。
+   * @param {string} data.seat 	乘客座位号。
+   * @param {is_cancel} data.duration 是否取消值机。填写true或false。true代表取消，如填写true上述字段（如calss等）均不做判断，机票返回未值机状态，乘客可重新值机。默认填写false。
+   */
+  updateFlightTicket(data) {
+    return this.request({
+      url: '/card/boardingpass/checkin',
+      data
+    })
+  }
 
+  // 第三方代制模式
 
+  /**
+   * 创建子商户接口
+   *
+   * 支持母商户调用该接口传入子商户的相关资料，并获取子商户ID，用于子商户的卡券功能管理。 子商户的资质包括：商户名称、商户logo（图片）、卡券类目、授权函（扫描件或彩照）、授权函有效期截止时间。
+   *
+   * @param {object} info
+   * @param {string} info.app_id 子商户的公众号app_id，配置后子商户卡券券面上的app_id为该app_id。注意：该app_id须经过认证
+   * @param {string} info.brand_name 子商户名称（12个汉字内），该名称将在制券时填入并显示在卡券页面上
+   * @param {string} info.logo_url 子商户logo，可通过 上传图片接口 获取。该logo将在制券时填入并显示在卡券页面上
+   * @param {string} info.protocol 授权函ID，即通过 上传临时素材接口 上传授权函后获得的meida_id
+   * @param {string} info.end_time 授权函有效期截止时间（东八区时间，单位为秒），需要与提交的扫描件一致
+   * @param {string} info.primary_category_id 一级类目id
+   * @param {string} info.secondary_category_id 二级类目id
+   * @param {string} info.agreement_media_id 营业执照或个体工商户营业执照彩照或扫描件
+   * @param {string} info.operator_media_id 营业执照内登记的经营者身份证彩照或扫描件
+   */
+  createSubMerchant(info) {
+    return this.request({
+      url: '/card/submerchant/submit',
+      data: {
+        info
+      }
+    })
+  }
 
+  /**
+   * 卡券开放类目查询接口
+   *
+   * 通过调用该接口查询卡券开放的类目ID，类目会随业务发展变更，请每次用接口去查询获取实时卡券类目。
+   *
+   * 注意：
+   * 1. 本接口查询的返回值还有卡券资质ID,此处的卡券资质为：已微信认证的公众号通过微信公众平台申请卡券功能时，所需的资质。
+   * 2. 对于第三方开发者代制（无公众号）模式，子商户无论选择什么类目，均暂不需按照此返回提供资质，返回值仅参考类目ID 即可。
+   */
+  getCardApplyProtocol() {
+    return this.request('/card/getapplyprotocol')
+  }
 
+  /**
+   * 创建子商户接口
+   *
+   * 支持母商户调用该接口传入子商户的相关资料，并获取子商户ID，用于子商户的卡券功能管理。 子商户的资质包括：商户名称、商户logo（图片）、卡券类目、授权函（扫描件或彩照）、授权函有效期截止时间。
+   *
+   * @param {object} info
+   * @param {string} info.merchant_id 子商户id，一个母商户公众号下唯一。
+   * @param {string} info.app_id 子商户的公众号app_id，配置后子商户卡券券面上的app_id为该app_id。注意：该app_id须经过认证
+   * @param {string} info.brand_name 子商户名称（12个汉字内），该名称将在制券时填入并显示在卡券页面上
+   * @param {string} info.logo_url 子商户logo，可通过 上传图片接口 获取。该logo将在制券时填入并显示在卡券页面上
+   * @param {string} info.protocol 授权函ID，即通过 上传临时素材接口 上传授权函后获得的meida_id
+   * @param {string} info.end_time 授权函有效期截止时间（东八区时间，单位为秒），需要与提交的扫描件一致
+   * @param {string} info.primary_category_id 一级类目id
+   * @param {string} info.secondary_category_id 二级类目id
+   * @param {string} info.agreement_media_id 营业执照或个体工商户营业执照彩照或扫描件
+   * @param {string} info.operator_media_id 营业执照内登记的经营者身份证彩照或扫描件
+   */
+  updateSubMerchant(info) {
+    return this.request({
+      url: '/card/submerchant/update',
+      data: {
+        info
+      }
+    })
+  }
 
+  /**
+   * 拉取单个子商户信息接口
+   *
+   * @param {string} merchant_id 子商户id，一个母商户公众号下唯一。
+   */
+  getSubMerchant(merchant_id) {
+    return this.request({
+      url: '/card/submerchant/get',
+      data: {
+        merchant_id
+      }
+    })
+  }
 
+  /**
+   * 拉取单个子商户信息接口
+   *
+   * @param {number} limit 拉取的子商户的个数，最大值为100
+   * @param {string} status 子商户审核状态，填入后，只会拉出当前状态的子商户
+   * @param {number} begin_id 起始的子商户id，一个母商户公众号下唯一
+   */
+  getSubMerchantBatch(limit, status, begin_id) {
+    return this.request({
+      url: '/card/submerchant/batchget',
+      data: {
+        limit, status, begin_id
+      }
+    })
+  }
 
+  // ----------------
+  // 微信门店
+  // ----------------
+  /**
+   * 创建门店
+   *
+   * @param {object} business 门店信息
+   */
+  createPoi(business) {
+    return this.request({
+      url: '/cgi-bin/poi/addpoi',
+      data: {
+        business
+      }
+    })
+  }
 
+  /**
+   * 查询门店信息
+   *
+   * @param {string} poi_id 门店信息
+   */
+  getPoiDetail(poi_id) {
+    return this.request({
+      url: '/cgi-bin/poi/getpoi',
+      data: {
+        poi_id
+      }
+    })
+  }
 
+  /**
+   * 查询门店列表
+   *
+   * @param {number} begin 开始位置，0 即为从第一条开始查询
+   * @param {number} limit 返回数据条数，最大允许50，默认为20
+   */
+  getPoiList(begin = 0, limit = 20) {
+    return this.request({
+      url: '/cgi-bin/poi/getpoilist',
+      data: {
+        begin, limit
+      }
+    })
+  }
 
+  /**
+   * 修改门店服务信息
+   *
+   * @param {object} business 门店信息
+   */
+  updatePoi(business) {
+    return this.request({
+      url: '/cgi-bin/poi/updatepoi',
+      data: {
+        business
+      }
+    })
+  }
 
+  /**
+   * 删除门店
+   *
+   * @param {object} business 门店信息
+   */
+  delPoi(business) {
+    return this.request({
+      url: '/cgi-bin/poi/delpoi',
+      data: {
+        business
+      }
+    })
+  }
+
+  /**
+   * 门店类目表
+   *
+   * 类目名称接口是为商户提供自己门店类型信息的接口。门店类目定位的越规范，能够精准的吸引更多用户，提高曝光率。
+   */
+  getPoiCategory() {
+    return this.request('/cgi-bin/poi/getwxcategory', {
+      method: 'get'
+    })
+  }
+
+  /**
+   * 拉取门店小程序类目
+   */
+  getWxaCategory() {
+    return this.request('/wxa/get_merchant_category', {
+      method: 'get'
+    })
+  }
+
+  /**
+   * 创建门店小程序
+   *
+   * @param {object} data
+   * @param {string} data.first_catid 一级类目id
+   * @param {string} data.second_catid 二级类目id
+   * @param {string} data.qualification_list 类目相关证件的临时素材mediaid 如果second_catid对应的sensitive_type为1 ，则qualification_list字段需要填 支持0~5个mediaid，例如mediaid1
+   * @param {string} data.headimg_mediaid 头像 --- 临时素材mediaid mediaid 用现有的media/upload接口得到的,获取链接： https://mp.weixin.qq.com/wiki?t=t=resource/res_main&id=mp1444738726 ( 支持jpg和png格式的图片，后续加上其他格式)
+   * @param {string} data.nickname 门店小程序的昵称 名称长度为4-30个字符（中文算两个字符）
+   * @param {string} data.intro 门店小程序的介绍
+   * @param {string} data.org_code 营业执照或组织代码证 --- 临时素材mediaid 如果返回错误码85024，则该字段必填，否则不用填
+   * @param {string} data.other_files 补充材料 --- 临时素材mediaid 如果返回错误码85024，则可以选填 支持0~5个mediaid，例如mediaid1
+   */
+  createWxaMerchant(data) {
+    return this.request({
+      url: '/wxa/apply_merchant',
+      data
+    })
+  }
+
+  /**
+   * 查询门店小程序审核结果
+   */
+  getWxaMerchantStatus() {
+    return this.request({
+      url: '/wxa/get_merchant_audit_info',
+      method: 'get'
+    })
+  }
+
+  /**
+   * 修改门店小程序信息
+   *
+   * @param {object} data
+   * @param {string} data.headimg_mediaid 门店头像的临时素材mediaid,如果不想改，参数传空值 获取mediaid可以通过接口 https://mp.weixin.qq.com/wiki?t=t=resource/res_main&id=mp1444738726
+   * @param {string} data.intro 门店小程序的介绍,如果不想改，参数传空值
+   */
+  updateWxaMerchant(headimg_mediaid, intro) {
+    return this.request({
+      url: '/wxa/modify_merchant',
+      data: {
+        headimg_mediaid, intro
+      }
+    })
+  }
+
+  /**
+   * 从腾讯地图拉取省市区信息
+   */
+  getWxaDistrict() {
+    return this.request({
+      url: '/wxa/get_district',
+      method: 'get'
+    })
+  }
+
+  /**
+   * 在腾讯地图中搜索门店
+   *
+   * @param {string} districtid 对应 拉取省市区信息接口 中的id字段
+   * @param {string} keyword 搜索的关键词
+   */
+  searchPoi(districtid, keyword) {
+    return this.request({
+      url: '/wxa/search_map_poi',
+      data: {
+        districtid, keyword
+      }
+    })
+  }
+
+  /**
+   * 在腾讯地图中创建门店
+   *
+   * @param {object} data
+   */
+  createMapPoi(data) {
+    return this.request({
+      url: '/wxa/create_map_poi',
+      data
+    })
+  }
+
+  /**
+   * 添加微信小程序门店
+   */
+  createWxaStore(data) {
+    return this.request({
+      url: '/wxa/add_store',
+      data
+    })
+  }
+
+  /**
+   * 更新微信小程序门店
+   */
+  updateWxaStore(data) {
+    return this.request({
+      url: '/wxa/update_store',
+      data
+    })
+  }
+
+  /**
+   * 获取单个微信小程序门店信息
+   *
+   * @param {string} poi_id 为门店小程序添加门店，审核成功后返回的门店id
+   */
+  getWxaStoreInfo(poi_id) {
+    return this.request({
+      url: '/wxa/get_store_info',
+      data: {
+        poi_id
+      }
+    })
+  }
+
+  /**
+   * 获取单个微信小程序门店信息
+   *
+   * @param {number} offset 获取门店列表的初始偏移位置，从0开始计数
+   * @param {number} limit 获取门店个数
+   */
+  getWxaStoreList(offset, limit) {
+    return this.request({
+      url: '/wxa/get_store_list',
+      data: {
+        offset, limit
+      }
+    })
+  }
+
+  /**
+   * 删除微信小程序门店
+   *
+   * @param {string} poi_id 门店id
+   */
+  delWxaStore(poi_id) {
+    return this.request({
+      url: '/wxa/del_store',
+      data: {
+        poi_id
+      }
+    })
+  }
+
+  /**
+   * 获取门店小程序配置的卡券
+   */
+  getWxaStoreCard() {
+    return this.request('/card/storewxa/get')
+  }
+
+  /**
+   * 设置门店小程序配置的卡券
+   *
+   * @param {string} poi_id 门店id
+   * @param {string} card_id 微信卡券id
+   */
+  setWxaStoreCard(poi_id, card_id) {
+    return this.request({
+      url: '/card/storewxa/set',
+      data: {
+        poi_id, card_id
+      }
+    })
+  }
+
+  // ----------------
+  // 微信小店
+  // ----------------
+  // TODO
+
+  // ----------------
+  // 智能接口
+  // ----------------
+  /**
+   * 语义理解
+   *
+   * @param {object} data
+   * @param {string} data.query 输入文本串
+   * @param {string} data.category 需要使用的服务类型，多个用“，”隔开，不能为空
+   * @param {string} data.latitude 纬度坐标，与经度同时传入；与城市二选一传入
+   * @param {string} data.longitude 经度坐标，与纬度同时传入；与城市二选一传入
+   * @param {string} data.city 城市名称，与经纬度二选一传入
+   * @param {string} data.region 区域名称，在城市存在的情况下可省；与经纬度二选一传入
+   * @param {string} data.uid 用户唯一id（非开发者id），用户区分公众号下的不同用户（建议填入用户openid），如果为空，则无法使用上下文理解功能。appid和uid同时存在的情况下，才可以使用上下文理解功能。
+   *
+   * [语义理解接口协议文档]{@link https://open.weixin.qq.com/zh_CN/htmledition/res/assets/smart_lang_protocol.pdf}
+   */
+  semanticSearch(data) {
+    return this.request({
+      url: '/semantic/semproxy/search',
+      data: {
+        appid: this.appId,
+        ...data
+      }
+    })
+  }
+
+  /**
+   * 微信语音转文字 - 提交语音
+   *
+   * @param {string} voice_id 语音唯一标识
+   * @param {string} format 文件格式 （只支持mp3，16k，单声道，最大1M）
+   * @param {string} lang 语言，zh_CN 或 en_US，默认中文
+   */
+  preVoice2Text(voice_id, format = 'mp3', lang = 'zh_CN') {
+    return this.request({
+      url: '/cgi-bin/media/voice/addvoicetorecofortext',
+      params: {
+        voice_id, format, lang
+      }
+    })
+  }
+
+  /**
+   * 微信语音转文字 - 获取语音识别结果
+   *
+   * 请注意，上个接口调用成功之后10s内调用这个接口，参数保持一致
+   */
+  getVoice2Text(voice_id, format = 'mp3', lang = 'zh_CN') {
+    return this.request({
+      url: '/cgi-bin/media/voice/queryrecoresultfortext',
+      params: {
+        voice_id, format, lang
+      }
+    })
+  }
+
+  /**
+   * 微信翻译
+   *
+   * @param {string|buffer} content 源内容
+   * @param {string} lfrom 源语言，zh_CN 或 en_US
+   * @param {string} lto 源语言，目标语言，zh_CN 或 en_US
+   */
+  translate(content, lfrom = 'zh_CN', lto = 'en_US') {
+    return this.request({
+      url: '/cgi-bin/media/voice/translatecontent',
+      params: {
+        lfrom, lto
+      },
+      data: content
+    })
+  }
+
+  /**
+   * 识别身份证
+   *
+   * @param {string} img 图片链接地址
+   * @param {buffer} img 图片文件，文件大小限制：小于2M
+   * @param {string} type 图片类型
+   *  - photo：拍照模型，带背景的图片
+   *  - scan：扫描模式，不带背景的图片
+   */
+  ocrIdcard(img, type) {
+    return typeof img === 'img' ? this.request({
+      url: '/cv/ocr/idcard',
+      params: {
+        type,
+        img_url: img
+      }
+    }) : this._upload({
+      url: '/cv/ocr/idcard',
+      params: {
+        type
+      },
+      data: {
+        img
+      }
+    })
+  }
+
+  /**
+   * 银行卡OCR识别接口
+   *
+   * @param {string} img 图片链接地址
+   * @param {buffer} img 图片文件，文件大小限制：小于2M
+   */
+  ocrBankcard(img) {
+    return typeof img === 'img' ? this.request({
+      url: '/cv/ocr/bankcard',
+      params: {
+        img_url: img
+      }
+    }) : this._upload({
+      url: '/cv/ocr/bankcard',
+      data: {
+        img
+      }
+    })
+  }
+
+  /**
+   * 行驶证OCR识别接口
+   *
+   * @param {string} img 图片链接地址
+   * @param {buffer} img 图片文件，文件大小限制：小于2M
+   */
+  ocrDriving(img) {
+    return typeof img === 'img' ? this.request({
+      url: '/cv/ocr/driving',
+      params: {
+        img_url: img
+      }
+    }) : this._upload({
+      url: '/cv/ocr/driving',
+      data: {
+        img
+      }
+    })
+  }
+
+  // ----------------
+  // 新版客服
+  // ----------------
+
+  /**
+   * 邀请绑定客服帐号
+   *
+   * 新添加的客服帐号是不能直接使用的，只有客服人员用微信号绑定了客服账号后，方可登录Web客服进行操作。此接口发起一个绑定邀请到客服人员微信号，客服人员需要在微信客户端上用该微信号确认后帐号才可用。尚未绑定微信号的帐号可以进行绑定邀请操作，邀请未失效时不能对该帐号进行再次绑定微信号邀请。
+   *
+   * @param {string} kf_account 完整客服帐号，格式为：帐号前缀@公众号微信号
+   * @param {string} invite_wx 接收绑定邀请的客服微信号
+   */
+  inviteKfWorker(kf_account, invite_wx) {
+    return this.request({
+      url: '/customservice/kfaccount/inviteworker',
+      data: {
+        kf_account, invite_wx
+      }
+    })
+  }
+
+  /**
+   * 客服 - 创建会话
+   *
+   * @param {string} kf_account 完整客服帐号，格式为：帐号前缀@公众号微信号
+   * @param {string} openid 粉丝的openid
+   */
+  createKfSession(kf_account, openid) {
+    return this.request({
+      url: '/customservice/kfsession/create',
+      data: {
+        kf_account, openid
+      }
+    })
+  }
+
+  /**
+   * 客服 - 关闭会话
+   *
+   * @param {string} kf_account 完整客服帐号，格式为：帐号前缀@公众号微信号
+   * @param {string} openid 粉丝的openid
+   */
+  closeKfSession(kf_account, openid) {
+    return this.request({
+      url: '/customservice/kfsession/close',
+      data: {
+        kf_account, openid
+      }
+    })
+  }
+
+  /**
+   * 客服 - 获取客户会话状态
+   *
+   * @param {string} openid 粉丝的openid
+   */
+  getKfSessionInfo(openid) {
+    return this.request({
+      url: '/customservice/kfsession/getsession',
+      method: 'get',
+      params: {
+        openid
+      }
+    })
+  }
+
+  /**
+   * 客服 - 获取客服会话列表
+   *
+   * @param {string} kf_account 完整客服帐号，格式为：帐号前缀@公众号微信号
+   */
+  getKfSessionList(kf_account) {
+    return this.request({
+      url: '/customservice/kfsession/getsessionlist',
+      method: 'get',
+      params: {
+        kf_account
+      }
+    })
+  }
+
+  /**
+   * 客服 - 获取未接入会话列表
+   */
+  getKfSessionWait() {
+    return this.request({
+      url: '/customservice/kfsession/getwaitcase',
+      method: 'get'
+    })
+  }
+
+  /**
+   * 客服 - 获取聊天记录
+   *
+   * @param {timestamp} starttime 起始时间，unix时间戳
+   * @param {timestamp} endtime 结束时间，unix时间戳，每次查询时段不能超过24小时
+   * @param {number} msgid 消息id顺序从小到大，从1开始
+   * @param {number} number 每次获取条数，最多10000条
+   */
+  getKfMessageRecordList(starttime, endtime, msgid, number) {
+    return this.request({
+      url: '/customservice/msgrecord/ getmsglist',
+      data: {
+        starttime, endtime, msgid, number
+      }
+    })
+  }
+
+  // ----------------
+  // 微信摇一摇
+  // ----------------
+  // TODO
+
+  // ----------------
+  // 微信 Wi-Fi
+  // ----------------
+  // TODO
+
+  // ----------------
+  // 微信扫一扫
+  // ----------------
+  // TODO
+
+  // ----------------
+  // 微信发票
+  // ----------------
+  // TODO
+
+  // ----------------
+  // 微信非税缴费
+  // ----------------
+  // TODO
 
 }
 
