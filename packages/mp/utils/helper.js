@@ -2,8 +2,6 @@
 
 const crypto = require('crypto')
 
-const parseXML = require('xml2js').parseString
-
 /**
  * 返回一个随机整数
  *
@@ -281,20 +279,6 @@ class WXBizMsgCrypt {
   extractEncrypt(raw) {
     const match = raw.match(/<(Encrypt)>(?:<!\[CDATA\[)(.*?)(?:\]\]>)(<\/\1>)/i)
     return match ? match[2] : ''
-  }
-
-  /**
-   * 采用 xml2js 库提供的解析方法进行提取
-   */
-  _extractEncrypt(raw) {
-    let encrypt = ''
-
-    parseXML(raw, (err, result) => {
-      if (err) throw err
-      encrypt = result.xml.Encrypt[0]
-    })
-
-    return encrypt
   }
 
   /**
