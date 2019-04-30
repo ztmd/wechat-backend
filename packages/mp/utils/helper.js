@@ -277,7 +277,7 @@ class WXBizMsgCrypt {
    * 提取失败则返回空字符串
    */
   extractEncrypt(raw) {
-    const match = raw.match(/<(Encrypt)>(?:<!\[CDATA\[)(.*?)(?:\]\]>)(<\/\1>)/i)
+    const match = raw.match(/<(Encrypt)>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?(<\/\1>)/i)
     return match ? match[2] : ''
   }
 
