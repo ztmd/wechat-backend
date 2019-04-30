@@ -4,12 +4,9 @@ const Base = require('./base')
 
 const {
   genNouce,
-  getTimestamp
-} = require('../utils/helper')
-
-const {
+  getTimestamp,
   genSha1
-} = require('../utils/sign')
+} = require('../utils/helper')
 
 /**
  * 微信公众平台服务端接口
