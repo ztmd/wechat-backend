@@ -5,8 +5,8 @@ const path = require('path')
 
 const axios = require('axios')
 
-const CACHE_FILE = path.join(__dirname, 'cache_miniprogram.json')
-const SESSION_KEY_FILE = path.join(__dirname, 'session_key_miniprogram.json')
+const ACCESS_TOKEN_FILE = path.join(__dirname, '_access_token_miniprogram.json')
+const SESSION_KEY_FILE = path.join(__dirname, '_session_key_miniprogram.json')
 
 /**
  * 基础类
@@ -54,8 +54,8 @@ class Base {
 
     // 从缓存文件中加载 token 和 session 信息，模拟中继服务器
     // 可以修改为采用 redis 或者 mongodb 等方式
-    if (fs.existsSync(CACHE_FILE)) {
-      this.tokenObj = require(CACHE_FILE)
+    if (fs.existsSync(ACCESS_TOKEN_FILE)) {
+      this.tokenObj = require(ACCESS_TOKEN_FILE)
     }
 
     if (fs.existsSync(SESSION_KEY_FILE)) {
@@ -145,7 +145,7 @@ class Base {
         // 获取 access_token 之后更新缓存
         data._time = Date.now()
         this.tokenObj = data
-        fs.writeFile(CACHE_FILE, JSON.stringify(data), () => {})
+        fs.writeFile(ACCESS_TOKEN_FILE, JSON.stringify(data), () => {})
         resolve(data)
       }).catch(error => {
         reject(error)
