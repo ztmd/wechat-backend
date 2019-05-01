@@ -675,9 +675,11 @@ class API extends Base {
    *
    */
   imgSecCheck(media) {
-    return this.request({
+    return this._upload({
       url: '/wxa/img_sec_check',
-      data: media
+      data: {
+        media
+      }
     })
   }
 

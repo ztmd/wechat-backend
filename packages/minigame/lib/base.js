@@ -4,6 +4,7 @@ const fs = require('fs')
 const path = require('path')
 
 const axios = require('axios')
+const FormData = require('form-data')
 
 const ACCESS_TOKEN_FILE = path.join(__dirname, '_access_token_minigame.json')
 const SESSION_KEY_FILE = path.join(__dirname, '_session_key_minigame.json')
@@ -78,6 +79,50 @@ class Base {
   log(...args) {
     if (this.printLog)
       console.log(args)
+  }
+
+  /**
+   * 文件上传方法
+   *
+   * @param {object} options 传递给 request 方法的参数
+   *
+   * 本方法将会对 options.data 进行劫持并转换为表单方式进行提交
+   */
+  _upload(options) {
+    return new Promise((resolve, reject) => {
+      const form = new FormData()
+      for (let key in options.data) {
+        const value = options.data[key]
+        if (value && value.hasOwnProperty('value') && value.hasOwnProperty('options')) {
+          form.append(key, value.value, value.options)
+        } else {
+          form.append(key, value)
+        }
+      }
+
+      const headers = {
+        'content-type': 'application/x-www-form-urlencoded'
+      }
+
+      Object.assign(headers, form.getHeaders())
+
+      form.getLength((err, length) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (!isNaN(length)) {
+            headers['content-length'] = length
+          }
+          options.data = form
+          options.headers = headers
+          this.request(options).then(res => {
+            resolve(res)
+          }).catch(error => {
+            reject(error)
+          })
+        }
+      })
+    })
   }
 
   /**
