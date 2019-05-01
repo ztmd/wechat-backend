@@ -6,13 +6,15 @@ const path = require('path')
 const axios = require('axios')
 const request = require('request')
 
+const FormData = require('form-data')
+
 const {
   obj2Params
 } = require('../utils/helper')
 
-const TOKEN_FILE = path.join(__dirname, '_token_mp.json')
-const TICKET_FILE = path.join(__dirname, '_js_ticket_mp.json')
-const AUTH_FILE = path.join(__dirname, '_auth_token_mp.json')
+const ACCESS_TOKEN_FILE = path.join(__dirname, '_access_token_mp.json')
+const JS_TICKET_FILE = path.join(__dirname, '_js_ticket_mp.json')
+const AUTH_TOKEN_FILE = path.join(__dirname, '_auth_token_mp.json')
 
 /**
  * 基础类
@@ -63,16 +65,16 @@ class Base {
 
     // 从缓存文件中加载 token 和 session 信息，模拟中继服务器
     // 可以修改为采用 redis 或者 mongodb 等方式
-    if (fs.existsSync(TOKEN_FILE)) {
-      this.tokenObj = require(TOKEN_FILE)
+    if (fs.existsSync(ACCESS_TOKEN_FILE)) {
+      this.tokenObj = require(ACCESS_TOKEN_FILE)
     }
 
-    if (fs.existsSync(TICKET_FILE)) {
-      this.ticketObj = require(TICKET_FILE)
+    if (fs.existsSync(JS_TICKET_FILE)) {
+      this.ticketObj = require(JS_TICKET_FILE)
     }
 
-    if (fs.existsSync(AUTH_FILE)) {
-      this.authTokenObj = require(AUTH_FILE)
+    if (fs.existsSync(AUTH_TOKEN_FILE)) {
+      this.authTokenObj = require(AUTH_TOKEN_FILE)
     }
   }
 
@@ -143,6 +145,8 @@ class Base {
   /**
    * 上传文件统一入口
    *
+   * 已由 _upload 重新实现，本方法弃用
+   *
    * 由于 axios 对文件上传的支持效果不是很理想，故采用 request 库进行文件上传的操作
    *
    * @param {object} data
@@ -153,8 +157,8 @@ class Base {
    * 其他 axios 参数将进行忽略
    *
    */
-  _upload({url, params = {}, data}) {
-    let uploadUrl = url;
+  __upload({url, params = {}, data}) {
+    let uploadUrl = url
     return new Promise((resolve, reject) => {
       this.getAccessToken().then(({access_token}) => {
         params.access_token = access_token
@@ -176,6 +180,50 @@ class Base {
         })
       }).catch(error => {
         reject(error)
+      })
+    })
+  }
+
+  /**
+   * 文件上传方法
+   *
+   * @param {object} options 传递给 request 方法的参数
+   *
+   * 本方法将会对 options.data 进行劫持并转换为表单方式进行提交
+   */
+  _upload(options) {
+    return new Promise((resolve, reject) => {
+      const form = new FormData()
+      for (let key in options.data) {
+        const value = options.data[key]
+        if (value && value.hasOwnProperty('value') && value.hasOwnProperty('options')) {
+          form.append(key, value.value, value.options)
+        } else {
+          form.append(key, value)
+        }
+      }
+
+      const headers = {
+        'content-type': 'application/x-www-form-urlencoded'
+      }
+
+      Object.assign(headers, form.getHeaders())
+
+      form.getLength((err, length) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (!isNaN(length)) {
+            headers['content-length'] = length
+          }
+          options.data = form
+          options.headers = headers
+          this.request(options).then(res => {
+            resolve(res)
+          }).catch(error => {
+            reject(error)
+          })
+        }
       })
     })
   }
@@ -213,7 +261,6 @@ class Base {
       }).catch(error => {
         reject(error)
       })
-
     })
   }
 
@@ -241,7 +288,7 @@ class Base {
         // 获取 access_token 之后更新缓存
         data._time = Date.now()
         this.tokenObj = data
-        fs.writeFile(TOKEN_FILE, JSON.stringify(data), () => {})
+        fs.writeFile(ACCESS_TOKEN_FILE, JSON.stringify(data), () => {})
         resolve(data)
       }).catch(error => {
         reject(error)
@@ -271,7 +318,7 @@ class Base {
         // 获取 access_token 之后更新缓存
         data._time = Date.now()
         this.ticketObj = data
-        fs.writeFile(TICKET_FILE, JSON.stringify(data), () => {})
+        fs.writeFile(JS_TICKET_FILE, JSON.stringify(data), () => {})
         resolve(data)
       }).catch(error => {
         reject(error)
@@ -297,7 +344,7 @@ class Base {
         }
       }).then(data => {
         this.authTokenObj[data.openid] = data
-        fs.writeFile(AUTH_FILE, JSON.stringify(this.authTokenObj), () => {})
+        fs.writeFile(AUTH_TOKEN_FILE, JSON.stringify(this.authTokenObj), () => {})
         resolve(data)
       }).catch(error => {
         reject(error)
