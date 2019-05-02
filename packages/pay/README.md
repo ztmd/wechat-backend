@@ -1,4 +1,4 @@
-# wechat-backend-minigame
+# wechat-backend-pay
 
 针对**普通商户**的微信支付接口封装。
 
