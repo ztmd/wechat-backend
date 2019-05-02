@@ -237,7 +237,7 @@ class Base {
       }
     }
 
-    const data = params.data
+    const data = params.data || {}
     // 通用参数在这里进行指定
     data.nonce_str = data.nonce_str || this._nonce()
     if (!params.noMchId) {
@@ -249,6 +249,11 @@ class Base {
     data.sign_type = data.sign_type || this.signType
 
     if (data.sign_type === 'MD5' && !params.keepSignType) {
+      delete data.sign_type
+    }
+
+    // 沙箱环境~~居然~~不需要指定签名
+    if (this.sandbox) {
       delete data.sign_type
     }
 
@@ -346,6 +351,22 @@ class Base {
       }
     }
     return this._request(params)
+  }
+
+  /**
+   * 获取微信支付仿真测试系统密钥
+   *
+   * @alias getSandboxSignkey
+   */
+  getSignkey() {
+    return this.getSandboxSignkey()
+  }
+  getSandboxSignkey() {
+    return this._request({
+      url: '/sandboxnew/pay/getsignkey',
+      sandbox: false,
+      noAppId: true
+    })
   }
 
 }

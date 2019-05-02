@@ -605,6 +605,16 @@ class API extends Base {
     })
   }
 
+  static async sandbox(options) {
+    const {sandbox_signkey} = await new API(options).getSandboxSignkey()
+
+    return new API({
+      ...options,
+      sandbox: true,
+      mchKey: sandbox_signkey
+    })
+  }
+
 }
 
 module.exports = API
