@@ -12,7 +12,6 @@
 const API = require('./lib')
 const api = new API({
   appId: '...',
-  appSecret: '...',
   mchId: '...',
   mchKey: '...'
 })
@@ -31,12 +30,43 @@ api[method](...)
 - `publicKey`，RSA 公钥。
 - `notifyUrl`，支付结果通知的回调地址。
 - `refundUrl`，退款结果通知的回调地址。
-- `sandbox`，是否开启沙箱模式。沙箱模式开启后所有请求会前置一个 `/sandboxnew` 字符串，用于进行沙箱测试。
 - `baseURL`，请求的基地址，通常这个值为 `https://api.mch.weixin.qq.com`，不需要进行更改。
 - `timeout`，请求的超时时间，默认为 40 秒。
 - `debug`，供内部开发调试使用。
 
 > 初始化参数的属性名采用驼峰形式，微信支付大部分接口的参数是下划线风格，请注意进行区分。
+
+## 沙箱模式
+
+微信提供了[微信支付仿真测试系统](https://pay.weixin.qq.com/wiki/doc/api/micropay.php?chapter=23_1&index=1)，本工具也支持了沙箱模式的调用，调用方式如下：
+
+1. 如果已经明确知道沙箱密钥 `sandbox_signkey`
+
+```js
+const api = new API({
+  appId: '...',
+  mchId: '...',
+  mchKey: sandbox_signkey
+})
+...
+```
+
+2. 如果没有沙箱密钥，则采用商户密钥进行异步获取之后再进行后续操作。
+
+```js
+;(async () => {
+  const api = await API.sandbox({
+    appId: '...',
+    mchId: '...',
+    mchKey: '...'
+  })
+
+  ...
+
+})()
+```
+
+> 沙箱密钥的获取逻辑通过 `getSandboxSignkey` 进行暴露。
 
 ## API Methods List
 
