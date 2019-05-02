@@ -23,7 +23,6 @@ api[method](...)
 初始化 API 的 `options` 参数说明：
 
 - `appId`，**必需**，公众号标识，即 AppID，可在「微信公众平台 - 设置 - 开发设置」页中获得。（需要已经成为开发者，且帐号没有异常状态）。
-- `appSecret`，**必需**，公众号密钥，即 AppSecret，获取方式同 AppID。
 - `mchId`，**必需**，商户号。
 - `mchKey`，**必需**，商户密钥。
 - `signType`，签名类型，目前支持 HMAC-SHA256 和 MD5，默认为 MD5。

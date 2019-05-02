@@ -28,8 +28,6 @@ class Base {
    * @param {object} options
    *
    * @param {string} options.appId 公众号标识
-   * @param {string} options.appSecret 公众号密钥
-   *
    * @param {string} options.mchId 商户号
    * @param {string} options.mchKey 商户密钥
    *
@@ -51,7 +49,6 @@ class Base {
    */
   constructor({
     appId,
-    appSecret,
     mchId,
     mchKey,
 
@@ -70,7 +67,6 @@ class Base {
     debug = false,
   } = {}) {
     this.appId = appId
-    this.appSecret = appSecret
     this.mchId = mchId
     this.mchKey = mchKey
     this.signType = signType
@@ -248,12 +244,8 @@ class Base {
     }
     data.sign_type = data.sign_type || this.signType
 
-    if (data.sign_type === 'MD5' && !params.keepSignType) {
-      delete data.sign_type
-    }
-
     // 沙箱环境~~居然~~不需要指定签名
-    if (this.sandbox) {
+    if (this.sandbox || (data.sign_type === 'MD5' && !params.keepSignType)) {
       delete data.sign_type
     }
 
