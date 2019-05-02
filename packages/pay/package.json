@@ -1,0 +1,15 @@
+{
+  "name": "wechat-backend-pay",
+  "version": "0.0.1",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "xovel<xovel@vip.qq.com>",
+  "license": "MIT",
+  "peerDependencies": {
+    "request": "^2.88.0",
+    "xml2js": "^0.4.19"
+  }
+}
