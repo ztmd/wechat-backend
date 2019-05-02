@@ -212,7 +212,7 @@ class Base {
    * @param {boolean} params.noMchId 自动计算签名时 mchId 不参与计算
    * @param {boolean} params.keepSignType 部分接口不需要显式传递 sign_type 字段，在其为默认签名类型（MD5），默认进行移除。开启此参数可以进行保留
    *
-   * @param {boolean} options.cert 显式指定接口需要证书
+   * @param {boolean} params.cert 显式指定接口需要证书
    */
   _request(params) {
     const options = {

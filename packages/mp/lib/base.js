@@ -28,7 +28,7 @@ class Base {
    * @param {string} options.appSecret 公众号的 appSecret
    * @param {string} options.baseURL 请求的基地址
    * @param {string} options.timeout 请求的超时时间，默认为 40 秒
-   * @param {string} options.printLog 是否输出请求日志，供内部开发调试使用
+   * @param {string} options.debug 是否输出请求日志，供内部开发调试使用
    *
    * 请求基地址默认为 `https://api.weixin.qq.com`，会指向就近路口
    * 通常情况下不需要修改该参数
@@ -39,7 +39,7 @@ class Base {
     appSecret,
     baseURL = 'https://api.weixin.qq.com',
     timeout = 40000,
-    printLog = false
+    debug = false
   }) {
     this.appId = appId
     this.appSecret = appSecret
@@ -52,7 +52,7 @@ class Base {
       timeout
     })
 
-    this.printLog = printLog
+    this.debug = debug
 
     this.tokenObj = {}
     this.ticketObj = {}
@@ -79,8 +79,8 @@ class Base {
   }
 
   log(...args) {
-    if (this.printLog)
-      console.log(args)
+    if (this.debug)
+      console.log.apply(null, args)
   }
 
   /**
