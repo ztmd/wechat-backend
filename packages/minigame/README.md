@@ -22,7 +22,7 @@ api[method](...)
 - `midasSecret` 米大师密钥
 - `baseURL`，请求的基地址，如遇到异常，可以更换到备用服务器
 - `timeout`，请求的超时时间，默认为 40 秒
-- `printLog`，是否输出请求日志，供内部开发调试使用
+- `debug`，是否输出请求日志，供内部开发调试使用
 
 ## API Methods List
 
