@@ -615,6 +615,98 @@ class API extends Base {
     })
   }
 
+  /**
+   * 合单下单
+   *
+   * 使用合单支付接口，用户只输入一次密码，即可完成多个订单的支付。目前最多一次可支持10笔订单进行合单支付。
+   * 用合单下单api在微信支付服务后台生成预支付交易单，返回正确的预支付交易会话标识后再按扫码、JSAPI、APP、H5等不同场景生成交易串调起支付。
+   *
+   * @param {object} data
+   * @param {string} data.combine_appid 此项必须传合单支付发起方的appid。appid是商户在微信申请公众号或移动应用成功后分配的帐号ID，登录平台为mp.weixin.qq.com或open.weixin.qq.com
+   * @param {string} data.combine_mch_id 此项必须传合单支付发起方的商户号。商户号是商户在微信申请微信支付成功后分配的帐号ID，登录平台为pay.weixin.qq.com
+   * @param {string} data.device_info 终端设备号(商户自定义，如门店编号)
+   * @param {string} data.combine_out_trade_no 合单支付总单号，商户系统内部的订单号,32个字符内、可包含字母,
+   * @param {string} data.spbill_create_ip 当trade_type=MWEB（H5支付）时，必须填写用户端IP地址。其他支付方式也可填写服务端IP地址
+   * @param {string} data.time_start 订单生成时间，格式为yyyyMMddHHmmss，如2017年12月25日9点10分10秒表示为20091225091010
+   * @param {string} data.time_expire 订单失效时间，格式为yyyyMMddHHmmss，如2017年12月27日9点15分10秒表示为20091227091510。注意：最短失效时间间隔必须大于1分钟
+   * @param {string} data.notify_url 异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+   * @param {string} data.trade_type 根据支付场景不同请传对应值：
+   * - 扫码支付：NATIVE
+   * - 公众号支付：JSAPI
+   * - APP支付：APP
+   * - H5支付：MWEB
+   * @param {string} data.product_id trade_type=NATIVE时，此参数必传。此id为二维码中包含的商品ID，商户自行定义
+   * @param {string} data.combine_openid rade_type=JSAPI时，此参数必传，使用combine_appid获取的对应用户openid。Openid是用户在商户appid下的唯一标识
+   * @param {string} data.scene_info 该字段用于上报支付的场景信息,针对H5支付有以下三种场景,请根据对应场景上报,H5支付不建议在APP端使用，针对场景1，2请接入APP支付，不然可能会出现兼容性问题
+   * 1. IOS移动应用
+   *  - "h5_info": h5支付固定传"h5_info"
+   *    - "type": 场景类型
+   *    - "app_name": 应用名
+   *    - "bundle_id":应用的bundle_id
+   * 2. 安卓移动应用
+   *  - "h5_info": h5支付固定传"h5_info"
+   *    - "type": 场景类型
+   *    - "app_name": 应用名
+   *    - "package_name": 包名
+   * 3. WAP网站应用
+   *  - "h5_info": h5支付固定传"h5_info"
+   *    - "type": 场景类型
+   *    - "wap_url": WAP网站URL地址
+   *    - "wap_name": WAP 网站名
+   * @param {string} data.sub_order_list
+   * @param {number} data.sub_order_list.order_num 子单笔数，Int，必填
+   * @param {number} data.sub_order_list.order_list 单详情列表
+   *
+   */
+  combinedOrder(data) {
+    data.sign_type = 'HMAC-SHA256'
+    if (typeof data.scene_info === 'object') {
+      data.scene_info = JSON.stringify(data.scene_info)
+    }
+    if (typeof data.sub_order_list === 'object') {
+      data.sub_order_list = JSON.stringify(data.sub_order_list)
+    }
+    return this.request('/pay/combinedorder', {
+      notify_url: this.notifyUrl,
+      ...data
+    }, {
+      noAppId: true,
+      noMchId: true
+    })
+  }
+
+  /**
+   * 合单关单
+   *
+   * @param {object} data
+   */
+  closeCombinedOrder(data) {
+    data.sign_type = 'HMAC-SHA256'
+    if (typeof data.sub_order_list === 'object') {
+      data.sub_order_list = JSON.stringify(data.sub_order_list)
+    }
+    return this.request('/pay/closecombinedorder', data, {
+      noAppId: true,
+      noMchId: true
+    })
+  }
+
+  /**
+   * 合单查单
+   *
+   * @param {object} data
+   */
+  queryCombinedOrder(data) {
+    data.sign_type = 'HMAC-SHA256'
+    if (typeof data.sub_order_list === 'object') {
+      data.sub_order_list = JSON.stringify(data.sub_order_list)
+    }
+    return this.request('/pay/querycombinedorder', data, {
+      noAppId: true,
+      noMchId: true
+    })
+  }
+
 }
 
 module.exports = API
