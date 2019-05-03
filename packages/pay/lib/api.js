@@ -707,6 +707,48 @@ class API extends Base {
     })
   }
 
+  // ---------------------
+  // 以下接口为境外商户相关
+  // ---------------------
+
+  /**
+   * 查询结算资金
+   *
+   * 通过此接口可以查询结算资金的明细
+   *
+   * @param {object} data
+   * @param {string} data.sub_mch_id 服务商下的子商户号或机构商户下的子商户识别码，服务商模式必填
+   * @param {number} data.usetag 已结算查询还是未结算查询
+   * - 1 - 已结算查询
+   * - 2 - 未结算查询
+   * @param {number} data.offset 返回的查询结果从这个偏移量开始取记录
+   * @param {number} data.limit 返回的最大记录条数，一般不超过10条为佳。
+   * @param {string} data.date_start 格式为yyyyMMdd，如2009年12月25日表示为20091225。时区为GMT+8 beijing(查询未结算记录时，该字段可不传)
+   * @param {string} data.date_end 格式为yyyyMMdd，如2009年12月25日表示为20091225。时区为GMT+8 beijing（查询未结算记录时，该字段可不传)
+   */
+  settlementQuery(data) {
+    return this.request('/pay/settlementquery', {
+      usetag: 1,
+      offset: 0,
+      limit: 10,
+      ...data
+    })
+  }
+
+  /**
+   * 查询汇率
+   *
+   * 商户网站的商品以外币标价时，通过该接口可以实时查询到微信使用的转换汇率。汇率更新时间为北京时间上午10:00，一天更新一次。
+   *
+   * @param {string} fee_type 外币币种
+   * @param {string} sub_mch_id 微信支付分配的子商户号
+   */
+  queryExchageRate(fee_type, sub_mch_id) {
+    return this.request('/pay/queryexchagerate', {
+      fee_type, sub_mch_id
+    })
+  }
+
 }
 
 module.exports = API
