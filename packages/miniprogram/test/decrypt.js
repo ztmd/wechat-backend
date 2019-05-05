@@ -4,8 +4,8 @@ const assert = require('assert')
 
 const WXBizDataCrypt = require('../utils/decrypt')
 
-describe('WXBizDataCrypt', () => {
-  it('decryptData - userInfo', done => {
+describe('WXBizDataCrypt', function () {
+  it('decryptData - userInfo', function () {
     const appId = 'wx4f4bc4dec97d474b'
     const sessionKey = 'tiihtNczf5v6AKRyjwEUhQ=='
     const encryptedData =
@@ -33,7 +33,6 @@ describe('WXBizDataCrypt', () => {
     const data = pc.decryptData(encryptedData, iv)
 
     assert.equal(data.unionId, unionId)
-    done()
   })
 
 })

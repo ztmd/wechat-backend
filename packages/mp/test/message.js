@@ -6,7 +6,7 @@ const {
   WXBizMsgCrypt
 } = require('../utils/helper')
 
-describe('WXBizMsgCrypt - C#', () => {
+describe('WXBizMsgCrypt - C#', function () {
   const sToken = 'QDG6eK'
   const sAppID = 'wx5823bf96d3bd56c7'
   const sEncodingAESKey = 'jWmYm7qr5nMoAUwZRjGtBxmz3KA1tkAj3ykkR6q2B2C'
@@ -27,29 +27,25 @@ describe('WXBizMsgCrypt - C#', () => {
 
   const instance = new WXBizMsgCrypt(sToken, sEncodingAESKey, sAppID)
 
-  it('decryptMsg', done => {
+  it('decryptMsg', function () {
     assert.equal(instance.decryptMsg(sReqMsgSig, sReqTimeStamp, sReqNonce, sReqData), sResult)
-    done()
   })
 
-  it('encryptMsg', done => {
+  it('encryptMsg', function () {
     const encrypted = instance._encrypt(sTestMsg)
     assert.equal(instance._decrypt(encrypted), sTestMsg)
-    done()
   })
 
-  it('extractEncrypt', done => {
+  it('extractEncrypt', function () {
     assert.equal(instance.extractEncrypt(sReqData), sEncrypt)
-    done()
   })
 
-  it('getSignature', done => {
+  it('getSignature', function () {
     assert.equal(instance.getSignature(sReqTimeStamp, sReqNonce, sEncrypt), sReqMsgSig)
-    done()
   })
 })
 
-describe('WXBizMsgCrypt - Java', () => {
+describe('WXBizMsgCrypt - Java', function () {
   const token = 'pamtest'
   const appId = 'wxb11529c136998cb6'
   const encodingAesKey = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG'
@@ -62,25 +58,21 @@ describe('WXBizMsgCrypt - Java', () => {
 
   const instance = new WXBizMsgCrypt(token, encodingAesKey, appId)
 
-  it('decryptMsg1', done => {
+  it('decryptMsg1', function () {
     assert.equal(instance._decrypt(afterAesEncrypt), replyMsg)
-    done()
   })
 
-  it('decryptMsg2', done => {
+  it('decryptMsg2', function () {
     assert.equal(instance._decrypt(afterAesEncrypt2), replyMsg2)
-    done()
   })
 
-  it('encryptMsg1', done => {
+  it('encryptMsg1', function () {
     const encrypted = instance._encrypt(replyMsg)
     assert.equal(instance._decrypt(encrypted), replyMsg)
-    done()
   })
 
-  it('encryptMsg2', done => {
+  it('encryptMsg2', function () {
     const encrypted = instance._encrypt(replyMsg2)
     assert.equal(instance._decrypt(encrypted), replyMsg2)
-    done()
   })
 })
