@@ -1,13 +1,13 @@
 'use strict'
 
-const WechatBackendMinigame = require('wechat-backend-minigame')
-const WechatBackendMiniprogram = require('wechat-backend-miniprogram')
-const WechatBackendMp = require('wechat-backend-mp')
-const WechatBackendPay = require('wechat-backend-pay')
+const Minigame = require('wechat-backend-minigame')
+const Miniprogram = require('wechat-backend-miniprogram')
+const Mp = require('wechat-backend-mp')
+const Pay = require('wechat-backend-pay')
 
 module.exports = {
-  Minigame: WechatBackendMinigame,
-  Miniprogram: wechatBackendMiniprogram,
-  Mp: wechatBackendMp,
-  Pay: wechatBackendPay
+  Minigame: Minigame,
+  Miniprogram: Miniprogram,
+  Mp: Mp,
+  Pay: Pay
 }
