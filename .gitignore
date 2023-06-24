@@ -23,7 +23,7 @@ yarn-error.log*
 yarn.lock
 package-lock.json
 
-/temp
+temp
 
 /config.yml
 /config.yaml

@@ -1,2 +1,7 @@
 _*.json
 _*.key
+
+test.js
+config.js
+
+temp
