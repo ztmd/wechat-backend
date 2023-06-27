@@ -1,6 +1,6 @@
 {
   "name": "wechat-backend",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Backend for WeChat.",
   "main": "index.js",
   "scripts": {
